@@ -1,0 +1,13 @@
+{
+    "dirs": [
+        "src"
+    ],
+    "files": [
+        ".DS_Store",
+        "package-lock.json",
+        "package.json",
+        "scanned_file.json",
+        "src/loadsave.js",
+        "src/main.js"
+    ]
+}
