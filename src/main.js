@@ -65,7 +65,15 @@ function filter_dir(file,pathItem,dirAppend) {
   }
 }
 
-function process_file(file,pathItem,dirAppend) {
+function check_option(pID) {
+  var vBoolean = false;
+  if (options && options.hasOwnProperty(pID) && (options[pID] == true)) {
+    vBoolean = true;
+  }
+  return vBoolean
+}
+
+function process_file(file,pathItem,dirAppend,options) {
   fs.lstat(pathItem, (err, stats) => {
     if(err) {
       return console.log(err); //Handle error
@@ -75,11 +83,15 @@ function process_file(file,pathItem,dirAppend) {
       if (stats.isDirectory()) {
         //console.log("'"+file+"' is a directory ''"+ pathItem + "/'");
         var scandir = dirAppend+file+"/";
-        console.log("DIR:  "+scandir);
+        if (check_option("scanlog") == true) {
+          console.log("DIR:  "+scandir);
+        }
         handle_dir(file,pathItem,dirAppend);
         walk_directory(pathItem,scandir);
       } else if (stats.isFile()) {
-        console.log("FILE: "+dirAppend+file+" ");
+        if (check_option("scanlog") == true) {
+          console.log("FILE: "+dirAppend+file+" ");
+        }  
         filter_file(file,pathItem,dirAppend);
       }
     }
