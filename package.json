@@ -1,6 +1,6 @@
 {
   "name": "walker4folder",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Tree walker for folders with recursive runs over subdirectories",
   "main": "src/main.js",
   "scripts": {
