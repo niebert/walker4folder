@@ -54,18 +54,18 @@ function filter_file(file,pathItem,dirAppend) {
   }
 }
 
-function filter_dir(file,pathItem,dirAppend) {
+function filter_dir(file,pathItem,dirAppend,options) {
   var ign = 0;
   var ign_arr = [".git"];
   if (file == ".DS_Store") {
     console.log("Ignore '.DS_Store'");
   } else {
     console.log("handle file '"+file+"'");
-    handle_file(file,pathItem,dirAppend);
+    handle_file(file,pathItem,dirAppend,options);
   }
 }
 
-function check_option(pID) {
+function check_option(pID,options) {
   var vBoolean = false;
   if (options && options.hasOwnProperty(pID) && (options[pID] == true)) {
     vBoolean = true;
@@ -83,16 +83,16 @@ function process_file(file,pathItem,dirAppend,options) {
       if (stats.isDirectory()) {
         //console.log("'"+file+"' is a directory ''"+ pathItem + "/'");
         var scandir = dirAppend+file+"/";
-        if (check_option("scanlog") == true) {
+        if (check_option("scandirs",options) == true) {
           console.log("DIR:  "+scandir);
         }
-        handle_dir(file,pathItem,dirAppend);
+        handle_dir(file,pathItem,dirAppend,options);
         walk_directory(pathItem,scandir);
       } else if (stats.isFile()) {
-        if (check_option("scanlog") == true) {
+        if (check_option("scanfiles",options) == true) {
           console.log("FILE: "+dirAppend+file+" ");
-        }  
-        filter_file(file,pathItem,dirAppend);
+        }
+        filter_file(file,pathItem,dirAppend,options);
       }
     }
   });
@@ -122,7 +122,7 @@ function log_file_properties(pathItem) {
   });
 }
 
-function walk_directory (directoryPath,dirAppend) {
+function walk_directory (directoryPath,dirAppend,options) {
   dirAppend = dirAppend || "";
   fs.readdir(directoryPath, function (err, files) {
       //handling error
@@ -134,7 +134,7 @@ function walk_directory (directoryPath,dirAppend) {
           // Do whatever you want to do with the file
           //isFile(directoryPath+"/"+file);
           //log_file_properties(directoryPath+"/"+file);
-          process_file(file,directoryPath+"/"+file,dirAppend);
+          process_file(file,directoryPath+"/"+file,dirAppend,options);
       });
   });
 
@@ -150,11 +150,11 @@ function timeout_save_scanned() {
   setTimeout(save_scanned,1000);
 }
 
-function walker4folder (pDirectoryPath,pHandler_File,pHandler_Dir) {
+function walker4folder (pDirectoryPath,pHandler_File,pHandler_Dir,options) {
   var vDirPath = pDirectoryPath || directoryPath;
   handle_dir = pHandler_Dir || handle_dir_default;
   handle_file = pHandler_File || handle_file_default;
-  walk_directory (vDirPath,"");
+  walk_directory (vDirPath,"",options);
 }
 
 module.exports = {
