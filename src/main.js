@@ -18,50 +18,63 @@ var dirAppend = "";
 var dirs = [];
 var files = [];
 
-var handle_dir = function (file,pathItem,dirAppend) {
-  handle_dir_default(file,pathItem,dirAppend);
+var handle_dir = function (file,pathDir,dirAppend,options) {
+  handle_dir_default(file,pathDir,dirAppend,options);
 }
 
-var handle_file = function (file,pathItem,dirAppend) {
-  handle_file_default(file,pathItem,dirAppend);
+var handle_file = function (file,pathFile,dirAppend,options) {
+  handle_file_default(file,pathFile,dirAppend);
 }
 
-function isFile(pathItem) {
-  var extension = path.extname(pathItem);
-  console.log("File: '"+pathItem+"' with Extension: '"+extension+"'");
+function isFile(pathFile) {
+  var extension = path.extname(pathFile);
+  console.log("File: '"+pathFile+"' with Extension: '"+extension+"'");
   return extension;
 }
 
-function handle_dir_default(file,pathItem,dirAppend) {
+function handle_dir_default(file,pathDir,dirAppend,options) {
   dirs.push(dirAppend+file);
 }
 
-function handle_file_default(file,pathItem,dirAppend) {
+function handle_file_default(file,pathFile,dirAppend,options) {
   files.push(dirAppend+file);
 }
 
-function filter_file(file,pathItem,dirAppend) {
+function filter_file(file,pathFile,dirAppend,options) {
   var ign = 0;
   var ign_arr = [".DS_Store",".git"];
+  if (options && options.files && options.hasOwnProperty("ignore")) {
+    ign_arr = options.files.ignore;
+  }
   for (var i = 0; i < ign_arr.length; i++) {
-
+    if (file == ign_arr[i]) {
+      ign++;
+    }
   }
   if (ign > 0 ) {
-    console.log("Ignore file '"+file+"'");
+    console.log("Ignore file '"+dirAppend+file+"'");
   } else {
-    console.log("handle file '"+file+"'");
-    handle_file(file,pathItem,dirAppend);
+    //console.log("handle file '"+file+"'");
+    handle_file(file,pathFile,dirAppend);
   }
 }
 
-function filter_dir(file,pathItem,dirAppend,options) {
+function filter_dir(file,pathFile,dirAppend,options) {
   var ign = 0;
   var ign_arr = [".git"];
-  if (file == ".DS_Store") {
-    console.log("Ignore '.DS_Store'");
+  if (options && options.dirs && options.hasOwnProperty("ignore")) {
+    ign_arr = options.dirs.ignore;
+  }
+  for (var i = 0; i < ign_arr.length; i++) {
+    if (file == ign_arr[i]) {
+      ign++;
+    }
+  }
+  if (ign > 0 ) {
+    console.log("Ignore Directory '"+dirAppend+file+"'");
   } else {
-    console.log("handle file '"+file+"'");
-    handle_file(file,pathItem,dirAppend,options);
+    //console.log("handle directory '"+file+"'");
+    handle_dir(file,pathFile,dirAppend,options);
   }
 }
 
@@ -70,29 +83,29 @@ function check_option(pID,options) {
   if (options && options.hasOwnProperty(pID) && (options[pID] == true)) {
     vBoolean = true;
   }
-  return vBoolean
+  return vBoolean;
 }
 
-function process_file(file,pathItem,dirAppend,options) {
-  fs.lstat(pathItem, (err, stats) => {
+function process_file(file,pathFile,dirAppend,options) {
+  fs.lstat(pathFile, (err, stats) => {
     if(err) {
       return console.log(err); //Handle error
     } else {
       //console.log("is a directory: "+stats.isDirectory());
       //console.log("is file: "+stats.isFile());
       if (stats.isDirectory()) {
-        //console.log("'"+file+"' is a directory ''"+ pathItem + "/'");
+        //console.log("'"+file+"' is a directory ''"+ pathFile + "/'");
         var scandir = dirAppend+file+"/";
-        if (check_option("scandirs",options) == true) {
+        if (check_option("logdirs",options) == true) {
           console.log("DIR:  "+scandir);
         }
-        handle_dir(file,pathItem,dirAppend,options);
-        walk_directory(pathItem,scandir);
+        filter_dir(file,pathFile,dirAppend,options);
+        walk_directory(pathFile,scandir);
       } else if (stats.isFile()) {
-        if (check_option("scanfiles",options) == true) {
+        if (check_option("logfiles",options) == true) {
           console.log("FILE: "+dirAppend+file+" ");
         }
-        filter_file(file,pathItem,dirAppend,options);
+        filter_file(file,pathFile,dirAppend,options);
       }
     }
   });
@@ -103,10 +116,10 @@ function process_file(file,pathItem,dirAppend,options) {
   //console.log(`Is symbolic link: ${stats.isSymbolicLink()}`);
 }
 
-function log_file_properties(pathItem) {
+function log_file_properties(pathFile) {
 
 
-  let path = pathItem;
+  let path = pathFile;
   fs.lstat(path, (err, stats) => {
 
     if(err)
@@ -141,13 +154,26 @@ function walk_directory (directoryPath,dirAppend,options) {
 }
 
 function save_scanned() {
-  ls.save_json('scanned_file.json',{'dirs':dirs,'files':files})
-  console.log("DONE");
+  var vFileName = this.filename || 'scanned_file.json';
+  ls.save_json(vFileName,{'dirs':dirs,'files':files})
+  console.log("DONE: save JSON in file '" + pFileName + "'");
 }
 
 
-function timeout_save_scanned() {
+function timeout_save_scanned(pFileName) {
+  if (pFileName) {
+    this.filename = pFileName;
+  }
   setTimeout(save_scanned,1000);
+}
+
+
+function removeExtension4File(pFilename) {
+	var vFilename = pFilename || "";
+	if (vFilename != "") {
+		vFilename = vFilename.replace(/\.[^/.]+$/, "");
+	};
+	return vFilename
 }
 
 function walker4folder (pDirectoryPath,pHandler_File,pHandler_Dir,options) {
@@ -157,9 +183,43 @@ function walker4folder (pDirectoryPath,pHandler_File,pHandler_Dir,options) {
   walk_directory (vDirPath,"",options);
 }
 
+function isString(pObj) {
+  return (typeof(pObj) == "string");
+}
+
+function getExtension(pFilePath) {
+  var vExt = "";
+  if (pFilePath) {
+    vExt = pFilePath.split('.').pop();
+  }
+  return vExt;
+}
+
+
+function getName4URL(pFilePath) {
+  var vNameExt = getNameExt4URL(pFilePath);
+  var vName = vNameExt;
+  if (vNameExt.indexOf(".")>0) {
+    vName = vName.substring(0,vNameExt.lastIndexOf("."))
+  };
+  console.log("getName4URL('"+pFilePath+"') return='"+vName+"'");
+  return vName;
+};
+
+
 module.exports = {
+  "filename": "scanned_file.json",
+  "dirs": dirs,
+  "files": files,
   "walk_directory": walk_directory,
   "walker4folder": walker4folder,
   "save_scanned": timeout_save_scanned,
-  "ls": ls
+  "load_file": ls.load_file,
+  "save_file": ls.save_file,
+  "load_json": ls.load_json,
+  "save_json": ls.save_json,
+  "remove_extension": removeExtension4File,
+  "is_string": isString,
+  "get_extension": getExtension,
+  "get_name4url": getName4URL
 };
