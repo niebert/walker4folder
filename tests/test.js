@@ -14,10 +14,12 @@ function my_handle_dir(file,pathItem,dirAppend) {
 }
 
 function replace4file(file,pathItem,dirAppend) {
-  var vContent = w4f.load_file(pathItem);
-  vContent = vContent.replace("v0.7.1","v1.0.4-master");
-  console.log("Replaced: "+vContent);
-  w4f.save_file(pathItem+".out",vContent);
+  if (w4f.get_extension(file) == "html") {
+    var vContent = w4f.load_file(pathItem);
+    vContent = vContent.replace("v0.7.1.min","v1.0.4-master");
+    console.log("Replaced: "+vContent);
+    w4f.save_file(pathItem+".out",vContent);
+  }
 }
 //w4f.walker4folder();
 //w4f.walker4folder("./src");

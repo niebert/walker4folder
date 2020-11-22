@@ -5,6 +5,7 @@
   "main": "src/main.js",
   "scripts": {
     "shelltest": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./version4readme.js",
     "test": "node ./tests/test.js"
   },
   "repository": {

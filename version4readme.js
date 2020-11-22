@@ -20,4 +20,4 @@ var outfile = "undefined content";
       }
     });
 
-setTimeout(function () { w4f.save_file('README.bak', outfile); },1500);
+setTimeout(function () { w4f.save_file('README.md', outfile); },1500);

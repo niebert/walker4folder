@@ -207,6 +207,31 @@ function getName4URL(pFilePath) {
 };
 
 
+function getNameExt4URL(pURL) {
+  //this gets the full url
+  var url = pURL || ""; //e.g. document.location.href;
+  if (typeof(url) == "string") {
+    //this removes the anchor at the end, if there is one
+    url = url.substring(0, (url.indexOf("#") == -1) ? url.length : url.indexOf("#"));
+    //this removes the query after the file name, if there is one
+    url = url.substring(0, (url.indexOf("?") == -1) ? url.length : url.indexOf("?"));
+    //this removes everything before the last slash in the path
+    url = url.substring(url.lastIndexOf("/") + 1, url.length);
+  };
+  //return
+  console.log("getNameExt4URL('"+pURL+"') return '"+url+"'");
+  return url;
+}
+
+function getRecursionDepth(pRelativePath) {
+    var rec_depth = 0;
+    if (pRelativePath && (isString(pRelativePath) == true) ) {
+      var path_arr = pRelativePath.split("/");
+      rec_depth = path_arr.length;
+    }
+    return rec_depth;
+}
+
 module.exports = {
   "filename": "scanned_file.json",
   "dirs": dirs,
@@ -221,5 +246,7 @@ module.exports = {
   "remove_extension": removeExtension4File,
   "is_string": isString,
   "get_extension": getExtension,
-  "get_name4url": getName4URL
+  "get_name4url": getName4URL,
+  "get_nameext4url": getNameExt4URL,
+  "get_recursion_depth": getRecursionDepth()
 };

@@ -1,4 +1,4 @@
-# Walker4Folder <div id4marker="version">1.0.4</div>
+# Walker4Folder <div id4marker="version" style="display: inline-block">1.0.2</div>
 Tree walker for folders ***(Walker4Folder)*** with recursive runs over subdirectories. The `walker4folder` can be used to perform specific task like search and replace on a regular basis on a specific directory. On a Linux system the `walker4folder` can be used to perform standard task in a [CronJob](https://en.wikipedia.org/wiki/Cron) or for update HTML pages to import a new version of an updated library.
 
 ## Installation
@@ -33,6 +33,7 @@ Assuming you have at least one script in your repository in which the `walker4fo
 If no directory parameter is provided to the `walker4folder` then the current directory will be scanned form which the script was called.  
 
 ### Scanned the current directory
+Now we look into a script and explain how the `walker4folder` script can be
 The function `walker4folder` runs over the current directory with a call without parameter.
 ```javascript
 const w4f = require('walker4folder');
@@ -87,6 +88,43 @@ w4f.walker4folder("./src",handle_file,handle_dir);
 w4f.save_scanned();
 ```
 
+### Select Files according to Extensions
+The following application of `walker4folder` explains the selection of a specific files that allows to perform a specific search-and-replace task for all selected files. We explain the application by a specific use-case:
+
+* Search all `html` files in the folder `www/` and all subdirectories.
+* load those `html` files and perform the search-and-replace tasks for each `html` file
+* save the file back to the file system.
+
+At first we filter all files with the file handler.
+
+```javascript
+const w4f = require('walker4folder');
+
+function my_handle_file(file,pathFile,dirAppend,options) {
+
+  var ext = w4f.get_extension(pathFile);
+  if (ext == "html") {
+    console.log("Found File:  '" + pathFile + "' with extension '" + ext + "'");
+  }
+}
+
+w4f.walker4folder("./www",my_handle_file);
+```
+The `console.log()` generates the following messages for each found file. It may look like this:
+```
+Found File: 'www/index.html' with extension 'html'
+Found File: 'www/other/myfile1.html' with extension 'html'
+Found File: 'www/other/myfile2.html' with extension 'html'
+```
+
+### Search and Replace in all Selected Files
+In the last script above `html` files are filtered from all found files
+Now we replace the `console.log` by
+* `load_file()`,
+* `search_replace()` and
+* `save_file()`
+operation. The script could look like this. The following task of the script is to replace the import of Javascript library  
+
 ### Ignore Files and Folders
 You can ignore specific files and folders with the options.
 ```javascript
@@ -100,6 +138,27 @@ let options = {
 };
 ```
 The files and folders that are mentioned in the ignore array will not be scanned. If you want to filter in a more advanced way use the file handler or the directory handlers and apply regular expressions on file, path or extension of files. In the example above two files `.DS_Store` and `.gitignore`
+
+### Recursion Depth - Directories
+You might want to search in the current directory only or just in the start directory e.g. `src/`. This is the recursion depth 0.  If you want to scan files in the start directory  (e.g. `src/`) in the subdirectories one level deeper (e.g. `src/md/` and `src/html`) but not the subdirectories 2 levels deeper (e.g. `src/md/input/` and `src/html/output/`) then your recursion depths is 1.
+
+The function `get_recursion_depth(pPath)` returns the recursion depth of the relative path from the start directory.
+
+The following script shows how you can check the current of file or directory depending on the returned recursion depth you can decide want to do depending on the returned recursion depth of the file or folder.
+
+```javascript
+const w4f = require('walker4folder');
+
+function my_handle_file(file,pathFile,relativePath,options) {
+
+  var rd = w4f.get_recursion_depth(relativePath);
+  if (rd <= 2) {
+    console.log("Found File:  '" + pathFile + "' with recursion depth " + rd + "." );
+  }
+}
+
+w4f.walker4folder("./www",my_handle_file);
+```
 
 ### Scanned a specific directory
 This call of the function `walker4folder` runs over a specific directory `./src` with directory name as first parameter.
