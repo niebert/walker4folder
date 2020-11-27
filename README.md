@@ -333,8 +333,8 @@ w4f.save_json("person.json",vJSON);
 ### Function `w4f.remove_extension()`
 The function `remove_extension(pPath)` removes the extension from a file path. That is useful if the scan of folders reads files and creates a new file for the found extension.
 ```javascript
-var name = w4f.get_extension("/home/user/documents/readme.html");
-// name="/home/user/documents/readme"
+var name = w4f.remove_extension("/home/user/documents/readme.html");
+// "name" contains filename without extension "/home/user/documents/readme"
 ```
 
 ### Function `w4f.is_string()`
