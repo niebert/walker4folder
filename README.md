@@ -144,7 +144,7 @@ function replace_in_file(file,pathFile,dirAppend,options) {
   }
 }
 
-w4f.walker4folder("./www",my_handle_file);
+w4f.walker4folder("./www",replace_in_file);
 ```
 
 ### Ignore Files and Folders
